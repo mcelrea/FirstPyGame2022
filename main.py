@@ -8,6 +8,20 @@ player = {"x": 640,
           "speed": 5,
           "color": pygame.Color(255,255,0)}
 
+map = [] #a list of rectangles
+
+def drawMap():
+    for currentRect in map:
+        #draw a rectangle?
+        pygame.draw.rect(screen,pygame.Color(0,255,255),currentRect)
+
+def createMap1():
+    map.append(pygame.Rect(400,200,100,250))
+    map.append(pygame.Rect(300,100,10,500))
+    map.append(pygame.Rect(0,0,1280,10))
+    map.append(pygame.Rect(0,0,10,720))
+    map.append(pygame.Rect(900,100,300,10))
+
 def clearScreen():
     pygame.draw.rect(screen, pygame.Color(0,0,0), (0,0,1280,720))
 
@@ -31,6 +45,7 @@ FPS = 60 #keep game at 60 FPS
 fpsClock = pygame.time.Clock()
 screen = pygame.display.set_mode((1280,720))
 gameOver = False
+createMap1()
 
 while(not gameOver):
     #loop through and empty the event queue, key presses
@@ -47,6 +62,7 @@ while(not gameOver):
 
     #draw code
     clearScreen()
+    drawMap()
     drawPlayer()
 
     #put all the graphics on the screen
