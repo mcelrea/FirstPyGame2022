@@ -32,4 +32,4 @@ What is a parameter.
 def function(x, y):
    #code
 ```
-x and y in the above function defition are parameters
+x and y in the above function definition are parameters

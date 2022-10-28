@@ -1,12 +1,23 @@
+import random
 import pygame
 
 
 #declare variables
-player = {"x": 640,
+player1 = {"x": 640,
           "y" : 360,
+          "oldx": 640,
+          "oldy:" : 360,
           "size": 10,
           "speed": 5,
           "color": pygame.Color(255,255,0)}
+
+player2 = {"x": 840,
+           "y" : 160,
+           "oldx": 840,
+           "oldy:" : 160,
+           "size": 10,
+           "speed": 5,
+           "color": pygame.Color(0,255,0)}
 
 map = [] #a list of rectangles
 
@@ -22,22 +33,60 @@ def createMap1():
     map.append(pygame.Rect(0,0,10,720))
     map.append(pygame.Rect(900,100,300,10))
 
+def checkPlayerCollision(player):
+    playerRect = getPlayerCollisionRectangle(player)
+
+    for wall in map:
+        if pygame.Rect.colliderect(playerRect,wall):
+            # reverse the move back to their previous position
+            player["x"] = player["oldx"]
+            player["y"] = player["oldy"]
+            player["color"] = (random.randint(0, 255),
+                                random.randint(0,255),
+                                random.randint(0,255))
+
+
+def getPlayerCollisionRectangle(player):
+    return pygame.Rect(player["x"] - player["size"], player["y"] - player["size"], player["size"] * 2, player["size"] * 2)
+
+def drawPlayerCollisionBox(player):
+    pygame.draw.rect(screen, pygame.Color(255,0,255), getPlayerCollisionRectangle(player), 1)
+
 def clearScreen():
     pygame.draw.rect(screen, pygame.Color(0,0,0), (0,0,1280,720))
 
-def drawPlayer():
-    pygame.draw.circle(screen, player["color"], (player["x"],player["y"]), player["size"])
+def drawPlayers():
+    pygame.draw.circle(screen, player1["color"], (player1["x"], player1["y"]), player1["size"])
+    pygame.draw.circle(screen, player2["color"], (player2["x"], player2["y"]), player2["size"])
 
 def playerMovement():
     keys = pygame.key.get_pressed()
+
+    #remember where the player was BEFORE movement
+    player1["oldx"] = player1["x"]
+    player1["oldy"] = player1["y"]
+    player2["oldx"] = player2["x"]
+    player2["oldy"] = player2["y"]
+
+    #player 1 keys
     if keys[pygame.K_d]:
-        player["x"] += player["speed"]
+        player1["x"] += player1["speed"]
     if keys[pygame.K_w]:
-        player["y"] -= player["speed"]
+        player1["y"] -= player1["speed"]
     if keys[pygame.K_s]:
-        player["y"] += player["speed"]
+        player1["y"] += player1["speed"]
     if keys[pygame.K_a]:
-        player["x"] -= player["speed"]
+        player1["x"] -= player1["speed"]
+
+    #player 2 keys
+    if keys[pygame.K_RIGHT]:
+        player2["x"] += player2["speed"]
+    if keys[pygame.K_UP]:
+        player2["y"] -= player2["speed"]
+    if keys[pygame.K_DOWN]:
+        player2["y"] += player2["speed"]
+    if keys[pygame.K_LEFT]:
+        player2["x"] -= player2["speed"]
 
 #start of the program
 pygame.init() #start the pygame engine
@@ -59,11 +108,15 @@ while(not gameOver):
     playerMovement()
 
     #ai
+    checkPlayerCollision(player1)
+    checkPlayerCollision(player2)
 
     #draw code
     clearScreen()
     drawMap()
-    drawPlayer()
+    drawPlayers()
+    drawPlayerCollisionBox(player1)
+    drawPlayerCollisionBox(player2)
 
     #put all the graphics on the screen
     #should be the LAST LINE of game code
