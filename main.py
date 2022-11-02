@@ -9,7 +9,8 @@ player1 = {"x": 640,
           "oldy:" : 360,
           "size": 10,
           "speed": 5,
-          "color": pygame.Color(255,255,0)}
+          "color": pygame.Color(255,255,0),
+          "lastDir" : "right"}
 
 player2 = {"x": 840,
            "y" : 160,
@@ -17,9 +18,20 @@ player2 = {"x": 840,
            "oldy:" : 160,
            "size": 10,
            "speed": 5,
-           "color": pygame.Color(0,255,0)}
+           "color": pygame.Color(0,255,0),
+           "lastDir": "right"}
 
 map = [] #a list of rectangles
+bullets = [] #a list of bullets in the game
+"""
+bullets[0] -> x
+bullets[1] -> y
+bullets[2] -> size
+bullets[3] -> player who shot bullet
+bullets[4] -> color
+bullets[5] -> x-velocity
+bullets[6] -> y-velocity
+"""
 
 def drawMap():
     for currentRect in map:
@@ -59,6 +71,24 @@ def drawPlayers():
     pygame.draw.circle(screen, player1["color"], (player1["x"], player1["y"]), player1["size"])
     pygame.draw.circle(screen, player2["color"], (player2["x"], player2["y"]), player2["size"])
 
+def drawBullets():
+    for b in bullets:
+        pygame.draw.circle(screen,b[4],(b[0],b[1]),b[2])
+
+def updateBullets():
+    """
+    this stupid function does not work! :(
+    I cannot change the values in a tuple, which is how I am
+    storing each bullet
+
+    I need to re-think how to store a bullet, so that I can change it,
+    so it can move, change colors, sizes, and all kinds of exciting things
+    :return:
+    """
+    for b in bullets:
+        b[0] = (b[0] + b[5]) # x += x-velocity
+        b[1] = (b[1] + b[6]) # y += y-velocity
+
 def playerMovement():
     keys = pygame.key.get_pressed()
 
@@ -71,22 +101,41 @@ def playerMovement():
     #player 1 keys
     if keys[pygame.K_d]:
         player1["x"] += player1["speed"]
+        player1["lastDir"] = "right"
     if keys[pygame.K_w]:
         player1["y"] -= player1["speed"]
+        player1["lastDir"] = "up"
     if keys[pygame.K_s]:
         player1["y"] += player1["speed"]
+        player1["lastDir"] = "down"
     if keys[pygame.K_a]:
         player1["x"] -= player1["speed"]
+        player1["lastDir"] = "left"
+    if keys[pygame.K_f]:
+        if player1["lastDir"] == "right":
+            bullets.append((player1["x"], player1["y"],5,"p1",player1["color"],20,0))
+        elif player1["lastDir"] == "left":
+            bullets.append((player1["x"], player1["y"],5,"p1",player1["color"],-20,0))
+        elif player1["lastDir"] == "up":
+            bullets.append((player1["x"], player1["y"],5,"p1",player1["color"],0,20))
+        elif player1["lastDir"] == "down":
+            bullets.append((player1["x"], player1["y"],5,"p1",player1["color"],0,-20))
+
+
 
     #player 2 keys
     if keys[pygame.K_RIGHT]:
         player2["x"] += player2["speed"]
+        player2["lastDir"] = "right"
     if keys[pygame.K_UP]:
         player2["y"] -= player2["speed"]
+        player2["lastDir"] = "up"
     if keys[pygame.K_DOWN]:
         player2["y"] += player2["speed"]
+        player2["lastDir"] = "down"
     if keys[pygame.K_LEFT]:
         player2["x"] -= player2["speed"]
+        player2["lastDir"] = "left"
 
 #start of the program
 pygame.init() #start the pygame engine
@@ -108,12 +157,14 @@ while(not gameOver):
     playerMovement()
 
     #ai
+    updateBullets()
     checkPlayerCollision(player1)
     checkPlayerCollision(player2)
 
     #draw code
     clearScreen()
     drawMap()
+    drawBullets()
     drawPlayers()
     drawPlayerCollisionBox(player1)
     drawPlayerCollisionBox(player2)
