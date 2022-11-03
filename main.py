@@ -117,7 +117,7 @@ def playerMovement():
     if keys[pygame.K_a]:
         player1["x"] -= player1["speed"]
         player1["lastDir"] = "left"
-    if keys[pygame.K_f]:
+    if keys[pygame.K_f] and player1["nextShot"] < time.time_ns():
         if player1["lastDir"] == "right":
             bullets.append({"x": player1["x"],
                             "y": player1["y"],
@@ -126,6 +126,8 @@ def playerMovement():
                             "color": player1["color"],
                             "xvel": 20,
                             "yvel": 0})
+            #I think 1000 ns is equals to 1 second
+            player1["nextShot"] = time.time_ns() + 1_000_000_000;
         elif player1["lastDir"] == "left":
             bullets.append({"x": player1["x"],
                             "y": player1["y"],
@@ -134,6 +136,7 @@ def playerMovement():
                             "color": player1["color"],
                             "xvel": -20,
                             "yvel": 0})
+            player1["nextShot"] = time.time_ns() + 1_000_000_000;
         elif player1["lastDir"] == "up":
             bullets.append({"x": player1["x"],
                             "y": player1["y"],
@@ -141,7 +144,8 @@ def playerMovement():
                             "owner": "p1",
                             "color": player1["color"],
                             "xvel": 0,
-                            "yvel": 20})
+                            "yvel": -20})
+            player1["nextShot"] = time.time_ns() + 1_000_000_000;
         elif player1["lastDir"] == "down":
             bullets.append({"x": player1["x"],
                             "y": player1["y"],
@@ -149,7 +153,8 @@ def playerMovement():
                             "owner": "p1",
                             "color": player1["color"],
                             "xvel": 0,
-                            "yvel": -20})
+                            "yvel": 20})
+            player1["nextShot"] = time.time_ns() + 1_000_000_000;
 
 
 
@@ -166,6 +171,44 @@ def playerMovement():
     if keys[pygame.K_LEFT]:
         player2["x"] -= player2["speed"]
         player2["lastDir"] = "left"
+    if keys[pygame.K_m] and player2["nextShot"] < time.time_ns():
+        if player2["lastDir"] == "right":
+            bullets.append({"x": player2["x"],
+                            "y": player2["y"],
+                            "size": 5,
+                            "owner": "p2",
+                            "color": player2["color"],
+                            "xvel": 20,
+                            "yvel": 0})
+            #I think 1000 ns is equals to 1 second
+            player2["nextShot"] = time.time_ns() + 1_000_000_000;
+        elif player2["lastDir"] == "left":
+            bullets.append({"x": player2["x"],
+                            "y": player2["y"],
+                            "size": 5,
+                            "owner": "p2",
+                            "color": player2["color"],
+                            "xvel": -20,
+                            "yvel": 0})
+            player2["nextShot"] = time.time_ns() + 1_000_000_000;
+        elif player2["lastDir"] == "up":
+            bullets.append({"x": player2["x"],
+                            "y": player2["y"],
+                            "size": 5,
+                            "owner": "p2",
+                            "color": player2["color"],
+                            "xvel": 0,
+                            "yvel": -20})
+            player2["nextShot"] = time.time_ns() + 1_000_000_000;
+        elif player2["lastDir"] == "down":
+            bullets.append({"x": player2["x"],
+                            "y": player2["y"],
+                            "size": 5,
+                            "owner": "p2",
+                            "color": player2["color"],
+                            "xvel": 0,
+                            "yvel": 20})
+            player2["nextShot"] = time.time_ns() + 1_000_000_000;
 
 #start of the program
 pygame.init() #start the pygame engine
@@ -187,7 +230,7 @@ while(not gameOver):
     playerMovement()
 
     #ai
-    #updateBullets()
+    updateBullets()
     checkPlayerCollision(player1)
     checkPlayerCollision(player2)
 
