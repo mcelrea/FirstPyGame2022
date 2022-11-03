@@ -10,10 +10,11 @@ player1 = {"x": 640,
           "oldy:" : 360,
           "size": 10,
           "speed": 5,
-          "color": pygame.Color(255,255,0),
+          "color": pygame.Color(255,0,0),
           "lastDir": "right",
           "shotTimeStamp": 0,
-          "nextShot": 0}
+          "nextShot": 0,
+          "score": 0}
 
 player2 = {"x": 840,
            "y" : 160,
@@ -24,7 +25,8 @@ player2 = {"x": 840,
            "color": pygame.Color(0,255,0),
            "lastDir": "right",
            "shotTimeStamp": 0,
-           "nextShot": 0}
+           "nextShot": 0,
+           "score": 0}
 
 map = [] #a list of rectangles
 bullets = [] #a list of bullets in the game
@@ -58,9 +60,9 @@ def checkPlayerCollision(player):
             # reverse the move back to their previous position
             player["x"] = player["oldx"]
             player["y"] = player["oldy"]
-            player["color"] = (random.randint(0, 255),
-                                random.randint(0,255),
-                                random.randint(0,255))
+            #player["color"] = (random.randint(0, 255),
+            #                    random.randint(0,255),
+            #                    random.randint(0,255))
 
 
 def getPlayerCollisionRectangle(player):
@@ -80,14 +82,43 @@ def drawBullets():
     for b in bullets:
         pygame.draw.circle(screen, b["color"], (b["x"], b["y"]), b["size"])
 
+def newRound():
+    #remove all the bullets
+    bullets.clear()
+
+    #reset the player locations
+    player1["x"] = 100;
+    player1["y"] = 100;
+    player2["x"] = 900;
+    player2["y"] = 600;
+
 def updateBullets():
     for b in bullets:
         #move the bullet
         b["x"] += b["xvel"]
         b["y"] += b["yvel"]
+
         #if bullet is off screen remove it
         if isOffScreen(b["x"], b["y"]):
             bullets.remove(b) #kill this bullet
+
+        #check if the bullet is hitting a player
+        player1Rect = getPlayerCollisionRectangle(player1)
+        player2Rect = getPlayerCollisionRectangle(player2)
+        bulletRect = pygame.Rect(b["x"] - b["size"], b["y"] - b["size"], b["size"] * 2, b["size"] * 2)
+        if pygame.Rect.colliderect(bulletRect, player1Rect) and b["owner"] == "p2":
+            player2["score"] += 1
+            newRound()
+        elif pygame.Rect.colliderect(bulletRect, player2Rect) and b["owner"] == "p1":
+            player1["score"] += 1
+            newRound()
+
+        #check this bullet for collision with every wall
+        for wall in map:
+            bulletRect = pygame.Rect(b["x"] - b["size"], b["y"] - b["size"], b["size"] * 2, b["size"] * 2)
+            if pygame.Rect.colliderect(wall, bulletRect):
+                b["xvel"] *= -1
+                b["yvel"] *= -1
 
 def isOffScreen(x, y):
     if x < 0 or x > 1280 or y < 0 or y > 720:
@@ -210,8 +241,17 @@ def playerMovement():
                             "yvel": 20})
             player2["nextShot"] = time.time_ns() + 1_000_000_000;
 
+# HUD - Heads Up Display
+def drawHUD():
+    textSurface = timesFont.render("Player 1 Score: " + str(player1["score"]), True, (255,255,255))
+    screen.blit(textSurface, (50, 30))
+    textSurface = timesFont.render("Player 2 Score: " + str(player2["score"]), True, (255,255,255))
+    screen.blit(textSurface, (1050, 30))
+
 #start of the program
 pygame.init() #start the pygame engine
+pygame.font.init() #start the font engine
+timesFont = pygame.font.SysFont('Times New Roman', 23) #load a font for use
 FPS = 60 #keep game at 60 FPS
 fpsClock = pygame.time.Clock()
 screen = pygame.display.set_mode((1280,720))
@@ -241,6 +281,7 @@ while(not gameOver):
     drawPlayers()
     drawPlayerCollisionBox(player1)
     drawPlayerCollisionBox(player2)
+    drawHUD()
 
     #put all the graphics on the screen
     #should be the LAST LINE of game code
