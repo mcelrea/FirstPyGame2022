@@ -1,5 +1,6 @@
 import random
 import pygame
+import time
 
 
 #declare variables
@@ -10,7 +11,9 @@ player1 = {"x": 640,
           "size": 10,
           "speed": 5,
           "color": pygame.Color(255,255,0),
-          "lastDir" : "right"}
+          "lastDir": "right",
+          "shotTimeStamp": 0,
+          "nextShot": 0}
 
 player2 = {"x": 840,
            "y" : 160,
@@ -19,7 +22,9 @@ player2 = {"x": 840,
            "size": 10,
            "speed": 5,
            "color": pygame.Color(0,255,0),
-           "lastDir": "right"}
+           "lastDir": "right",
+           "shotTimeStamp": 0,
+           "nextShot": 0}
 
 map = [] #a list of rectangles
 bullets = [] #a list of bullets in the game
@@ -73,21 +78,22 @@ def drawPlayers():
 
 def drawBullets():
     for b in bullets:
-        pygame.draw.circle(screen,b[4],(b[0],b[1]),b[2])
+        pygame.draw.circle(screen, b["color"], (b["x"], b["y"]), b["size"])
 
 def updateBullets():
-    """
-    this stupid function does not work! :(
-    I cannot change the values in a tuple, which is how I am
-    storing each bullet
-
-    I need to re-think how to store a bullet, so that I can change it,
-    so it can move, change colors, sizes, and all kinds of exciting things
-    :return:
-    """
     for b in bullets:
-        b[0] = (b[0] + b[5]) # x += x-velocity
-        b[1] = (b[1] + b[6]) # y += y-velocity
+        #move the bullet
+        b["x"] += b["xvel"]
+        b["y"] += b["yvel"]
+        #if bullet is off screen remove it
+        if isOffScreen(b["x"], b["y"]):
+            bullets.remove(b) #kill this bullet
+
+def isOffScreen(x, y):
+    if x < 0 or x > 1280 or y < 0 or y > 720:
+        return True
+    else:
+        return False
 
 def playerMovement():
     keys = pygame.key.get_pressed()
@@ -113,13 +119,37 @@ def playerMovement():
         player1["lastDir"] = "left"
     if keys[pygame.K_f]:
         if player1["lastDir"] == "right":
-            bullets.append((player1["x"], player1["y"],5,"p1",player1["color"],20,0))
+            bullets.append({"x": player1["x"],
+                            "y": player1["y"],
+                            "size": 5,
+                            "owner": "p1",
+                            "color": player1["color"],
+                            "xvel": 20,
+                            "yvel": 0})
         elif player1["lastDir"] == "left":
-            bullets.append((player1["x"], player1["y"],5,"p1",player1["color"],-20,0))
+            bullets.append({"x": player1["x"],
+                            "y": player1["y"],
+                            "size": 5,
+                            "owner": "p1",
+                            "color": player1["color"],
+                            "xvel": -20,
+                            "yvel": 0})
         elif player1["lastDir"] == "up":
-            bullets.append((player1["x"], player1["y"],5,"p1",player1["color"],0,20))
+            bullets.append({"x": player1["x"],
+                            "y": player1["y"],
+                            "size": 5,
+                            "owner": "p1",
+                            "color": player1["color"],
+                            "xvel": 0,
+                            "yvel": 20})
         elif player1["lastDir"] == "down":
-            bullets.append((player1["x"], player1["y"],5,"p1",player1["color"],0,-20))
+            bullets.append({"x": player1["x"],
+                            "y": player1["y"],
+                            "size": 5,
+                            "owner": "p1",
+                            "color": player1["color"],
+                            "xvel": 0,
+                            "yvel": -20})
 
 
 
@@ -157,7 +187,7 @@ while(not gameOver):
     playerMovement()
 
     #ai
-    updateBullets()
+    #updateBullets()
     checkPlayerCollision(player1)
     checkPlayerCollision(player2)
 
