@@ -1,6 +1,6 @@
-#Programming Notes
+# Programming Notes
 
-##Principles of Programming
+## Principles of Programming
 
 Ideas and concepts to help you succeed in programming
 
