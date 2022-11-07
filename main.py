@@ -30,15 +30,8 @@ player2 = {"x": 840,
 
 map = [] #a list of rectangles
 bullets = [] #a list of bullets in the game
-"""
-bullets[0] -> x
-bullets[1] -> y
-bullets[2] -> size
-bullets[3] -> player who shot bullet
-bullets[4] -> color
-bullets[5] -> x-velocity
-bullets[6] -> y-velocity
-"""
+gameState = "start" #start, playing, end
+
 
 def drawMap():
     for currentRect in map:
@@ -93,6 +86,7 @@ def newRound():
     player2["y"] = 600;
 
 def updateBullets():
+    global gameState
     for b in bullets:
         #move the bullet
         b["x"] += b["xvel"]
@@ -108,9 +102,13 @@ def updateBullets():
         bulletRect = pygame.Rect(b["x"] - b["size"], b["y"] - b["size"], b["size"] * 2, b["size"] * 2)
         if pygame.Rect.colliderect(bulletRect, player1Rect) and b["owner"] == "p2":
             player2["score"] += 1
+            if player2["score"] == 2:
+                gameState = "end"
             newRound()
         elif pygame.Rect.colliderect(bulletRect, player2Rect) and b["owner"] == "p1":
             player1["score"] += 1
+            if player1["score"] == 2:
+                gameState = "end"
             newRound()
 
         #check this bullet for collision with every wall
@@ -125,6 +123,21 @@ def isOffScreen(x, y):
         return True
     else:
         return False
+
+def checkEndScreenKeyPresses():
+    global gameState
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_RETURN]:
+        gameState = "start"
+
+def checkStartScreenKeyPresses():
+    global gameState
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_SPACE]:
+        newRound()
+        player1["score"] = 0
+        player2["score"] = 0
+        gameState = "playing"
 
 def playerMovement():
     keys = pygame.key.get_pressed()
@@ -248,6 +261,25 @@ def drawHUD():
     textSurface = timesFont.render("Player 2 Score: " + str(player2["score"]), True, (255,255,255))
     screen.blit(textSurface, (1050, 30))
 
+def drawEndScreen():
+    textSurface = timesFont.render("GAME OVER", True, (255,255,255))
+    screen.blit(textSurface, (575, 300))
+    if player1["score"] > player2["score"]:
+        textSurface = timesFont.render("Red Player Wins", True, (255,255,255))
+        screen.blit(textSurface, (575, 350))
+    if player2["score"] > player1["score"]:
+        textSurface = timesFont.render("Green Player Wins", True, (255,255,255))
+        screen.blit(textSurface, (575, 350))
+
+    textSurface = timesFont.render("Press the Enter Key to Continue", True, (255,255,255))
+    screen.blit(textSurface, (575, 400))
+
+
+def drawStartScreen():
+    clearScreen()
+    textSurface = timesFont.render("Press Spacebar to Start Game!", True, (255,255,255))
+    screen.blit(textSurface, (575, 300))
+
 #start of the program
 pygame.init() #start the pygame engine
 pygame.font.init() #start the font engine
@@ -265,23 +297,29 @@ while(not gameOver):
         #if the event is a click on the "x" close button
         if event.type == pygame.QUIT:
             gameOver = True
+    if gameState == "start":
+        checkStartScreenKeyPresses()
+        drawStartScreen()
+    if gameState == "end":
+        checkEndScreenKeyPresses()
+        drawEndScreen()
+    if gameState == "playing":
+        #player input
+        playerMovement()
 
-    #player input
-    playerMovement()
+        #ai
+        updateBullets()
+        checkPlayerCollision(player1)
+        checkPlayerCollision(player2)
 
-    #ai
-    updateBullets()
-    checkPlayerCollision(player1)
-    checkPlayerCollision(player2)
-
-    #draw code
-    clearScreen()
-    drawMap()
-    drawBullets()
-    drawPlayers()
-    drawPlayerCollisionBox(player1)
-    drawPlayerCollisionBox(player2)
-    drawHUD()
+        #draw code
+        clearScreen()
+        drawMap()
+        drawBullets()
+        drawPlayers()
+        drawPlayerCollisionBox(player1)
+        drawPlayerCollisionBox(player2)
+        drawHUD()
 
     #put all the graphics on the screen
     #should be the LAST LINE of game code
